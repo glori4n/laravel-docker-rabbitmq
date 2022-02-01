@@ -1,0 +1,49 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: glori4n
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: messagein
+    container_name: messagein-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - messagein
+
+  db:
+    image: mysql:5.7
+    container_name: messagein-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: messagein
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_USER: admin
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - messagein
+
+  nginx:
+    image: nginx:alpine
+    container_name: messagein-nginx
+    restart: unless-stopped
+    ports:
+      - 8001:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - messagein
+
+networks:
+  messagein:
+    driver: bridge
